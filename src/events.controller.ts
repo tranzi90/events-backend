@@ -1,19 +1,34 @@
-import { Body, Controller, Delete, Get, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
+import { CreateEventDto } from './create-event.dto';
+import { UpdateEventDto } from './update-event.dto';
+import { Event } from './event.entity';
 
 @Controller('events')
 export class EventsController {
+  private events: Event[] = [];
+
   @Get()
   findAll() {}
 
   @Get(':id')
-  findOne() {}
+  findOne(@Param('id') id) {}
 
   @Post()
-  create(@Body() input) {}
+  create(@Body() input: CreateEventDto) {}
 
   @Patch(':id')
-  update() {}
+  update(@Param('id') id, @Body() input: UpdateEventDto) {
+    return input.when;
+  }
 
   @Delete(':id')
-  remove() {}
+  remove(@Param('id') id) {}
 }
