@@ -3,6 +3,8 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
+  NotFoundException,
   Param,
   Patch,
   Post,
@@ -15,6 +17,8 @@ import { Repository } from 'typeorm';
 
 @Controller('events')
 export class EventsController {
+  private readonly logger = new Logger(EventsController.name);
+
   constructor(
     @InjectRepository(Event)
     private readonly repository: Repository<Event>,
@@ -22,12 +26,18 @@ export class EventsController {
 
   @Get()
   async findAll() {
-    return await this.repository.find();
+    const events = await this.repository.find();
+    this.logger.debug(`Found ${events.length} events`);
+    return events;
   }
 
   @Get(':id')
   async findOne(@Param('id') id) {
-    return await this.repository.findOneBy({ id });
+    const event = await this.repository.findOneBy({ id });
+
+    if (!event) throw new NotFoundException();
+
+    return event;
   }
 
   @Post()
@@ -42,6 +52,8 @@ export class EventsController {
   async update(@Param('id') id, @Body() input: UpdateEventDto) {
     const event = await this.findOne(id);
 
+    if (!event) throw new NotFoundException();
+
     return await this.repository.save({
       ...event,
       ...input,
@@ -52,6 +64,9 @@ export class EventsController {
   @Delete(':id')
   async remove(@Param('id') id) {
     const event = await this.findOne(id);
+
+    if (!event) throw new NotFoundException();
+
     await this.repository.remove(event);
   }
 }
